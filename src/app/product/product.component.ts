@@ -8,16 +8,18 @@ import { of } from 'rxjs';
   templateUrl: './product.component.html',
   styleUrls: ['./product.component.css']
 })
+
 export class ProductComponent implements OnInit {
   products: any[] = [];
-  product: any = {};
-  productId: number = 0;  // Déclarez ici la variable productId avec une valeur initiale
+  product: any = { name: '', price: 0 }; // Initialisation vide
+  productId: number = 0;
   errorMessage: string = '';
+  showDetails: boolean = false; // Ajout de la variable pour contrôler l'affichage des détails
 
   constructor(private http: HttpClient) {}
 
   ngOnInit() {
-    this.getProducts(); // Récupérer tous les produits lors du démarrage du composant
+    this.getProducts();
   }
 
   getProducts() {
@@ -34,6 +36,8 @@ export class ProductComponent implements OnInit {
   }
 
   addProduct() {
+    this.product.price = Number(this.product.price); 
+    console.log('Product to add:', this.product);
     this.http.post('http://localhost:8080/api/products', this.product)
       .pipe(
         catchError((error) => {
@@ -44,12 +48,14 @@ export class ProductComponent implements OnInit {
       .subscribe((data: any) => {
         if (data) {
           this.products.push(data);
-          this.product = {};
+          // Réinitialiser le formulaire
         }
       });
   }
-
+  
   deleteProduct(productId: number) {
+    console.log("Deleting product with ID: ", productId);
+  
     this.http.delete(`http://localhost:8080/api/products/${productId}`)
       .pipe(
         catchError((error) => {
@@ -57,21 +63,42 @@ export class ProductComponent implements OnInit {
           return of(null);
         })
       )
-      .subscribe(() => {
+      .subscribe(response => {
+        if (response) {
+          console.log('Product deleted successfully:', response);
+        }
+  
+        // Mise à jour de la liste après suppression
         this.products = this.products.filter(product => product.id !== productId);
       });
   }
+  
+  
+  
 
   getProductById(productId: number) {
     this.http.get(`http://localhost:8080/api/products/${productId}`)
       .pipe(
         catchError((error) => {
           this.errorMessage = 'Product not found!';
+          this.product = { name: '', price: 0 }; // Réinitialiser si le produit n'est pas trouvé
+          this.showDetails = false; // Cacher les détails si produit non trouvé
           return of(null);
         })
       )
       .subscribe((data: any) => {
-        this.product = data;
+        if (data) {
+          this.product = data;
+          this.errorMessage = ''; // Effacer tout message d'erreur
+          this.showDetails = true; // Afficher les détails
+        } else {
+          this.product = { name: '', price: 0 }; // Réinitialisation si non trouvé
+          this.showDetails = false; // Cacher les détails si produit non trouvé
+        }
       });
+  }
+
+  toggleDetails() {
+    this.showDetails = !this.showDetails; // Inverser l'état d'affichage des détails
   }
 }
