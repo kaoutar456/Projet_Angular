@@ -19,4 +19,11 @@ stage('Analyse SonarQube') {
     }
 }
 
+stage('Build') {
+    steps {
+        sh 'npm install'
+        sh 'ng build --prod'
+    }
+}
+
 }
