@@ -9,4 +9,14 @@ pipeline {
             }
         }
 }
+
+stage('Analyse SonarQube') {
+    steps {
+        withSonarQubeEnv('SonarQube') {
+            sh 'npm install'
+            sh 'npm run sonar'
+        }
+    }
+}
+
 }
