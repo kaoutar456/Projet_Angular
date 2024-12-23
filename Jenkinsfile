@@ -40,4 +40,10 @@ stage('Push Docker Image') {
     }
 }
 
+stage('Deploy and Run') {
+    steps {
+        sh 'docker run -d -p 5000:5000 kaoutar2khat/my-angular-project:latest'
+    }
+}
+
 }
