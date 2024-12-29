@@ -2,57 +2,67 @@ pipeline {
     agent any
 
     environment {
-        NODE_HOME = tool name: 'NODEJS' // Utilisation de Node.js configuré dans Jenkins
+        // Utilisation de NodeJS installé dans Jenkins
+        NODE_HOME = tool name: 'NODEJS' // Nom de l'installation de Node.js dans Jenkins
         PATH = "${NODE_HOME}/bin:${env.PATH}"
     }
 
     stages {
+        // Etape de récupération du code source depuis GitHub
         stage('Checkout') {
             steps {
-                // Récupérer le code source depuis GitHub
+                // Vérifie et récupère le code depuis le dépôt Git
                 checkout scm
             }
         }
-        
+
+        // Etape d'installation des dépendances (npm install)
         stage('Install Dependencies') {
             steps {
+                // Installation des dépendances du projet Angular via npm
                 script {
-                    // Installer les dépendances avec npm
+                    // Vérifie si `npm` est installé et puis exécute l'installation
                     sh 'npm install'
                 }
             }
         }
 
+        // Etape de build (construction du projet Angular)
         stage('Build') {
             steps {
+                // Exécute la commande de build pour l'application Angular
                 script {
-                    // Lancer le build de l'application Angular
                     sh 'npm run build'
                 }
             }
         }
 
+        // Etape de test (exécution des tests unitaires)
         stage('Test') {
             steps {
+                // Exécution des tests unitaires avec Angular
                 script {
-                    // Lancer les tests unitaires (modifier ou commenter si non applicable)
-                    sh 'npm test'
+                    sh 'npm test -- --watch=false --browsers=ChromeHeadless'
                 }
             }
         }
 
-       
     }
 
+    // Etapes après la fin du pipeline (succès ou échec)
     post {
         always {
-            // Nettoyer le workspace à la fin
+            // Nettoyage du workspace après chaque exécution du pipeline
             cleanWs()
         }
+
         success {
+            // Message en cas de succès
             echo 'Pipeline exécutée avec succès !'
         }
+
         failure {
+            // Message en cas d'échec
             echo 'La pipeline a échoué.'
         }
     }
